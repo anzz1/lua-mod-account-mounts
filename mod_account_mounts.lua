@@ -125,8 +125,6 @@ local mount_listing = {
     [28828] = {0,0,0,0,0}, -- Nether Drake
     [29059] = {150,0,0,0,0}, -- Naxxramas Deathcharger
     [30174] = {0,0,0,0,0}, -- Riding Turtle
-    [30829] = {150,0,0,0,0}, -- Summon Kessel's Elekk
-    [30837] = {150,0,0,0,0}, -- Summon Kessel's Elekk
     [31700] = {0,0,0,0,0}, -- Black Qiraji Battle Tank
     [31973] = {150,0,0,0,0}, -- Kessel's Elekk
     [32235] = {225,0,1,0,0}, -- Golden Gryphon
@@ -428,6 +426,8 @@ local mount_listing = {
     -- disabled
     -- [60120] = {0,0,0,0,0}, -- Summon Loaner Wind Rider
     -- [26332] = {0,0,0,0,0}, -- Summon Mouth Tentacle
+    -- [30829] = {150,0,0,0,0}, -- Summon Kessel's Elekk
+    -- [30837] = {150,0,0,0,0}, -- Summon Kessel's Elekk
 }
 
 --local RIDING_SPELL = {
@@ -472,13 +472,13 @@ local function OnLogin(event, player)
                     ((mount[2]==0) or (mount[2]==class)) and 
                     ((not StrictFactions) or (mount[3]==0) or (mount[3]==(team+1))) and
                     ((mount[4]==0) or (mount[4]==148) or (mount[4]==149) or (mount[4]==150) or (mount[4]==152) or (mount[4]==533) or (mount[4]==554) or (player:GetSkillValue(mount[4]) >= mount[5]))) then
-                    	if ((spellId == 61425) and (team == 2)) then -- if StrictFactions=false, have to check and replace traveler mammoth special case, to not spawn enemy vendors
-                    		spellId = 61447
-                    	elseif ((spellId == 61447) and (team == 1)) then
-                    		spellId = 61425
-                    	end
-                    	if (not player:HasSpell(spellId)) then
-                        	player:LearnSpell(spellId)
+                        if ((spellId == 61425) and (team == 2)) then -- if StrictFactions=false, have to check and replace traveler mammoth special case, to not spawn enemy vendors
+                            spellId = 61447
+                        elseif ((spellId == 61447) and (team == 1)) then
+                            spellId = 61425
+                        end
+                        if (not player:HasSpell(spellId)) then
+                            player:LearnSpell(spellId)
                         end
                     end
                 end
@@ -488,15 +488,15 @@ local function OnLogin(event, player)
 end
 
 local function OnCommand(event, player, command)
-	if ((command == "learn all mounts") and GM_LearnAllCmd and (player:GetGMRank() >= 1)) then
+    if (GM_LearnAllCmd and (command == "learn all mounts") and (player:GetGMRank() >= 1)) then
         player:LearnSpell(33388) -- Apprentince Riding (75)
         player:LearnSpell(33391) -- Journeyman Riding (150)
         player:LearnSpell(34090) -- Expert Riding (225)
         player:LearnSpell(34091) -- Artisan Riding (300)
         for k,_ in pairs(mount_listing) do
-        	player:LearnSpell(k)
+            player:LearnSpell(k)
         end
-	end
+    end
 end
 
 RegisterPlayerEvent(3, OnLogin)
