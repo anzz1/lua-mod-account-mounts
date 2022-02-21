@@ -6,7 +6,7 @@ local EnableModule = true
 local AnnounceModule = true   -- Announce module on player login ?
 
 local StrictFactions = true  -- Disallow learning mounts from opposing faction
-local GM_LearnAllCmd = false  -- enable ".learn all mounts" command for GM
+local GM_LearnAllCmd = false  -- enable ".learn all mounts" command for GM (debug)
 
 ------------------------------------------------------------------------------------------------
 -- END CONFIG
@@ -438,7 +438,7 @@ local mount_listing = {
 --}
 
 local function OnLogin(event, player)
-    if (AnnounceModule) then
+    if (AnnounceModule and event) then
         player:SendBroadcastMessage("This server is running the |cff4CFF00AccountMounts|r module.")
     end
 
@@ -488,7 +488,7 @@ local function OnLogin(event, player)
 end
 
 local function OnCommand(event, player, command)
-    if (GM_LearnAllCmd and (command == "learn all mounts") and (player:GetGMRank() >= 1)) then
+    if (GM_LearnAllCmd and (command:lower() == "learn all mounts") and (player:GetGMRank() >= 1)) then
         player:LearnSpell(33388) -- Apprentince Riding (75)
         player:LearnSpell(33391) -- Journeyman Riding (150)
         player:LearnSpell(34090) -- Expert Riding (225)
@@ -496,8 +496,18 @@ local function OnCommand(event, player, command)
         for k,_ in pairs(mount_listing) do
             player:LearnSpell(k)
         end
+        return false
+    end
+end
+
+local function OnSendLearnedSpell(event, packet, player)
+    spellId = packet:ReadULong() -- spellId(SMSG_LEARNED_SPELL) / oldSpellId (SMSG_SUPERCEDED_SPELL)
+    if(spellId == 33388 or spellId == 33391 or spellId == 34090 or spellId == 34091) then
+        player:RegisterEvent((function(_,_,_,p) OnLogin(nil, p) end), 100)
     end
 end
 
 RegisterPlayerEvent(3, OnLogin)
 RegisterPlayerEvent(42, OnCommand)
+RegisterPacketEvent(299, 7, OnSendLearnedSpell) -- PACKET_EVENT_ON_PACKET_SEND (SMSG_LEARNED_SPELL)
+RegisterPacketEvent(300, 7, OnSendLearnedSpell) -- PACKET_EVENT_ON_PACKET_SEND (SMSG_SUPERCEDED_SPELL)
